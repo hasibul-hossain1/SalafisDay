@@ -92,6 +92,13 @@ Salafis Day is an Islamic daily-utilities app with **Bangladesh-first** product 
 | Server-state fetching/cache | **TanStack Query** | Request lifecycle, cache, refetch, and mutations |
 | HTTP transport | **Axios** | API client transport |
 | Data validation | **Zod** | Data shapes and validation at trust boundaries |
+| Web/backend unit and integration tests | **Vitest** | Admin and Hono/API behavior; verify runtime compatibility |
+| Mobile unit/component tests | **Jest** | React Native/Expo behavior; verify Expo compatibility |
+| Web UI tests | **@testing-library/react** | Admin component behavior and accessible queries |
+| Mobile UI tests | **@testing-library/react-native** | Mobile component behavior and accessible queries |
+| Vitest test linting | **@vitest/eslint-plugin** | Current package for the requested Vitest ESLint plugin; recommended config and explicit rules in `docs/RULES.md` |
+| Jest test linting | **eslint-plugin-jest** | Recommended config and explicit rules in `docs/RULES.md` |
+| UI test linting | **eslint-plugin-testing-library** | Framework-compatible recommended rules and explicit overrides in `docs/RULES.md` |
 | Package manager / workspace foundation | **pnpm** | Dependency management and, if used, pnpm workspaces |
 
 **Scope clarification:** Existing use of a technology must be verified against each app. Approval of `Drizzle ORM` does not imply the same server and device schemas, nor does it make D1 and Expo SQLite auto-sync. Approval of `Expo Notifications` does not approve another push vendor or custom native alarm library.
@@ -107,7 +114,7 @@ Salafis Day is an Islamic daily-utilities app with **Bangladesh-first** product 
 | Account/authentication service and session library | **TBD** — do not infer a provider |
 | Admin authorization library, identity provider, email/SMS provider | **TBD** |
 | Ramadan lunar calendar service/data source and timetable publisher | **TBD** — source agreement required |
-| Testing tools and frameworks | **Proposed in Section 15; not approved** |
+| Additional testing infrastructure | Core unit/component stack approved in Section 3; E2E tools, network-mocking packages, runtime adapters/presets, DOM environments, and coverage providers remain pending unless separately approved |
 | Monorepo task runner, including Turborepo | **TBD** — pnpm approval does not include a task runner |
 | Analytics, logging/monitoring SaaS, error tracking, rate-limit service | **TBD** |
 | Background job/queue service, cache, external storage provider | **TBD** |
@@ -510,20 +517,21 @@ Large Quran audio libraries and media features are **outside the currently appro
 
 ## 15. Quality Assurance and Testing
 
-**No testing framework has been approved yet.** The entries below are **recommendations for owner review**, not additions to the Approved Technology Register and not permission to install them.
+**The owner has approved Vitest for web/backend, Jest for React Native/Expo, their corresponding Testing Libraries, and the test lint plugins in Section 3.** Approval does not mean these tools are installed or configured. Follow `docs/RULES.md` for mandatory Zod validation and test/lint requirements. Additional testing infrastructure requires separate approval.
 
-### 15.1 Proposed testing-tool shortlist
+### 15.1 Testing-tool decisions
 
 | Area | Suggested candidate | Reason / fit | Approval status |
 |---|---|---|---|
-| Backend unit and API tests | **Vitest** | Fast JavaScript tests; usable with Hono, subject to Workers-environment setup | **Proposed — not approved** |
-| Admin component tests | **Vitest + React Testing Library** | UI interaction, validation, states, and controlled data behavior | **Proposed — not approved** |
-| Mobile unit/component tests | **Jest + React Native Testing Library** | Common React Native/Expo component testing approach | **Proposed — not approved** |
+| Backend unit and API tests | **Vitest** | Hono behavior, validation and authorization; verify Workers-runtime support separately | **Approved** |
+| Admin component tests | **Vitest + @testing-library/react** | UI interaction, validation, states, and controlled data behavior | **Approved** |
+| Mobile unit/component tests | **Jest + @testing-library/react-native** | React Native/Expo component behavior | **Approved** |
+| Test linting | **@vitest/eslint-plugin / eslint-plugin-jest + eslint-plugin-testing-library** | Recommended configs plus required rule severities in `docs/RULES.md` | **Approved** |
 | Admin end-to-end tests | **Playwright** | Browser flows for protected admin editing and publishing | **Proposed — not approved** |
 | Mobile end-to-end tests | **Maestro** or **Detox** | Real-device/emulator flows; choose one after comparing compatibility | **Proposed — not approved** |
 | Network mocking (only if needed) | **Mock Service Worker (MSW)** | Predictable HTTP behaviors in tests | **Proposed — not approved** |
 
-**Recommended decision order:** approve one suitable unit-test stack per runtime first, then introduce E2E tools only after there are stable flows to verify. Before proposing packages, inspect Expo, Vite, and Workers versions, existing test configs, and compatibility.
+**Setup order:** verify Expo, Vite, Workers, ESLint and test-library compatibility, configure the approved unit/component stack, then propose E2E tools only when stable flows require them. Runtime adapters/presets, DOM environments, coverage providers, and other direct supporting packages require explicit approval if not already registered. Do not claim a Node-only test validates Workers/D1/R2 behavior. No numeric coverage threshold is approved.
 
 ### 15.2 Mandatory verification scenarios (regardless of tool choice)
 
@@ -608,7 +616,7 @@ Exact release milestones, success metrics, supported device minimums, and perfor
 | DEC-LOCATION | Which location/GPS/geocoding package (if any), manual selection UX, and initial region list? | **TBD** |
 | DEC-AUTH | Which admin authentication/session mechanism, optional user auth provider, and role model? | **TBD** |
 | DEC-NAV | Which mobile/admin routing approach matches the existing repositories? | **TBD** |
-| DEC-TEST | Which proposed testing frameworks should actually be installed? | **TBD — suggestions in Section 15** |
+| DEC-TEST | Core stack approved; which additional runtime adapters, coverage providers, E2E or network-mocking tools are needed? | **Core stack approved — additional infrastructure TBD; see Section 15** |
 | DEC-DEPLOY | How will the admin be hosted and the mobile app be built/distributed? | **TBD** |
 | DEC-LANGUAGE | Default UI language and global language strategy; TypeScript migration policy if applicable | **TBD where not already established in code** |
 | DEC-SYNC | Exact offline timetable package format, manifest contract, and sync conflict rules | **TBD** |
@@ -623,6 +631,7 @@ Exact release milestones, success metrics, supported device minimums, and perfor
 - Expo SQLite for the mobile local database.
 - Expo Notifications.
 - Zustand, TanStack Query, Axios, Zod, and pnpm.
+- Vitest (web/backend), Jest (mobile), corresponding Testing Libraries, and test lint plugins in Section 3; mandatory validation and quality rules in `docs/RULES.md`.
 - Bangladesh-first, globally capable product direction.
 - Prayer times and Ramadan as the currently approved feature areas.
 - Optional user accounts / guest-first mobile use.
@@ -633,7 +642,7 @@ Exact release milestones, success metrics, supported device minimums, and perfor
 
 For every non-trivial coding task:
 
-1. Read `docs/TRD.md` and the relevant repository instructions (`AGENTS.md`, `CLAUDE.md`, etc. **only if they exist**).
+1. Read `docs/TRD.md`, `docs/PRD.md`, `docs/RULES.md`, and the relevant repository instructions (`AGENTS.md`, `CLAUDE.md`, etc. **only if they exist**).
 2. Inspect the current files/configuration. Distinguish **implemented** functionality from **planned** requirements.
 3. Identify the exact change and which approved feature/technology it belongs to.
 4. Check whether a new technology, cloud resource, major refactor, or unapproved scope is required.
